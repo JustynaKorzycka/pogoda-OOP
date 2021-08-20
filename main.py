@@ -46,7 +46,7 @@ class WeatherAPI:
   
   def get_data(self, location):
     current_date = str(datetime.date.today())
-    self.record = self.file.check_record(current_date, location)
+    self.record = self.file.check_and_get_record(current_date, location)
     if not self.record:
       connectionWIthApi =  ConectionMixin(self.api_key)
       self.record = connectionWIthApi.connect_with_api(location)
@@ -78,7 +78,7 @@ def main():
     if location == '0':
       break
     weatherData.get_data(location)
-
+    
 if __name__ == '__main__':
   main()
  
