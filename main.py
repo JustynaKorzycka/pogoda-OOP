@@ -18,9 +18,6 @@ class FileMixin:
         for line in file:
           if len(line)>1:
             converted_data = json.loads(line)
-            print(converted_data['location']['localtime'])
-            print(request_date)
-            print(converted_data['location']['name'])
             if converted_data['location']['name'] == city and request_date in converted_data['location']['localtime']:
               return converted_data
         else:
