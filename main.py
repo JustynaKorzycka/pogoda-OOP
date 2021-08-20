@@ -12,7 +12,7 @@ class FileMixin:
       json.dump(record,file)
       file.write(os.linesep)
 
-  def check_record(self, request_date, city):
+  def check_and_get_record(self, request_date, city):
     if os.path.exists(self.file_name):
       with open(self.file_name, 'r') as file:
         for line in file:
@@ -39,20 +39,17 @@ class ConectionMixin:
     return weather_data
 
 class WeatherAPI:
-  def __init__(self, file, location, current_date, api_key):
+  def __init__(self, file, api_key):
     self.record = None
     self.file = file
-    self.location = location
-    self.cur_date = current_date
     self.api_key = api_key
-    self.get_data()
   
-  def get_data(self):
-    self.record = self.file.check_record(self.cur_date, self.location)
-
+  def get_data(self, location):
+    current_date = str(datetime.date.today())
+    self.record = self.file.check_record(current_date, location)
     if not self.record:
       connectionWIthApi =  ConectionMixin(self.api_key)
-      self.record = connectionWIthApi.connect_with_api(self.location)
+      self.record = connectionWIthApi.connect_with_api(location)
       if self.record.get('error'):
         print(f'Błąd: {self.record}')
         return 0
@@ -60,6 +57,8 @@ class WeatherAPI:
     self.print_weather_data()
   
   def print_weather_data(self):
+    city = self.record['location']['name']
+    cur_date = self.record['location']['localtime']
     temp = self.record['current']['temp_c']
     humidity = self.record['current']['humidity']
     cloud = self.record['current']['cloud']
@@ -67,19 +66,18 @@ class WeatherAPI:
     pressure = self.record['current']['pressure_mb']
     # chance_of_rain = self.record['current']['chance_of_rain']
     # chance_of_snow = self.record['current']['chance_of_snow']
-    print(f'Miasto: {self.location}\n Czas: {self.cur_date} \n Temperatura: {temp}\n Wilgotność powietrza: {humidity}%\n Zachmurzenie: {cloud}% \n Prędkość wiatru: {wind_speed}km/h \n Ciśnienie: {pressure} mbar \n ')
+    print(f'Miasto: {city}\n Czas: {cur_date} \n Temperatura: {temp}\n Wilgotność powietrza: {humidity}%\n Zachmurzenie: {cloud}% \n Prędkość wiatru: {wind_speed}km/h \n Ciśnienie: {pressure} mbar \n ')
 
 def main():
   api_key = 'c52833b4ef704f9e8f3151342211808'
   file_name = 'weatherData.txt'
   file_manager = FileMixin(file_name)
+  weatherData = WeatherAPI(file_manager, api_key)
   while True:
     location = input('Wpisz miasto: ')
     if location == '0':
       break
-    current_date = str(datetime.date.today())
-    weatherData = WeatherAPI(file_manager, location, current_date, api_key)
-  
+    weatherData.get_data(location)
 
 if __name__ == '__main__':
   main()
